@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22dae69ff91deca4695a12e6f5a051ef, type: 3}
+  m_Name: ViewPrefabConfig
+  m_EditorClassIdentifier: 
+  _coinCounterViewPrefab: {fileID: 9158618617408102766, guid: 68226f6a9b38a134fbc8c9b2f2a847d1, type: 3}
+  _receiveKeyViewPrefab: {fileID: 1548372900972155383, guid: 3af370cab70d75d42be5725bc0d4e47f, type: 3}
+  _livesViewPrefab: {fileID: -7916387194821507850, guid: 98ea1a65c79d3524e80eb6385b59cf94, type: 3}
+  _restartViewPrefab: {fileID: 3142572909712891590, guid: 91f0f19f87e1b1c43bdb09d9f7fcba6c, type: 3}
+  _absenceKeyViewPrefab: {fileID: 3674390598343538894, guid: 66bc4eef2c02aea41a594a3ab2edb1fb, type: 3}
+  _startViewPrefab: {fileID: 3371857002087966418, guid: da9ddd59567224947a77f1a81b2ef1fb, type: 3}
+  _gameOverViewPrefab: {fileID: -726577889650013693, guid: 8e79fb4240703ea4f8548c7500b6aa72, type: 3}
