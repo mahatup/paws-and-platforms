@@ -27,8 +27,17 @@ public class LivesView : MonoBehaviour
         if (_hearts.Count == 0) return;
 
         Heart last = _hearts.Last();
-        last.Whole.SetActive(false);
-        last.Broken.SetActive(true);
+
+        if (last.Whole)
+        { 
+            last.Whole.SetActive(false); 
+        }
+
+        if (last.Broken)
+        { 
+            last.Broken.SetActive(true); 
+        }
+
         _hearts.Remove(last);
     }
 }
