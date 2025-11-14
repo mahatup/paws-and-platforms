@@ -8,6 +8,8 @@ public class Cat : MonoBehaviour
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private Animator _animator;
 
+    public Vector2 Position => transform.position;
+
     public void SetVelocity(Vector2 velocity)
     {
         _rigidBody2D.velocity = velocity;
@@ -32,11 +34,4 @@ public class Cat : MonoBehaviour
     {
         _animator.SetInteger("State", (int)state);
     }
-
-    public EStates GetAnimationState()
-    {
-        return (EStates)_animator.GetInteger("State");
-    }
-
-    public bool IsFlipped => _spriteRenderer.flipX;
 }

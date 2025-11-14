@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,9 @@ public class CatMovementService
 {
     private Cat _cat;
     private CatConfig _config;
+    private float _airTime;
+
+    public event Action AirDeath;
 
     public CatMovementService(Cat cat, CatConfig config)
     {
@@ -14,16 +18,28 @@ public class CatMovementService
         _config = config;
     }
 
-    public void HandleInput()
+    public void Update(InputService input)
+    {
+        HandleMovement(input);
+        CheckAirDeath();
+    }
+
+    public void HandleMovement(InputService input)
     {
         if (IsGrounded())
-            _cat.SetAnimationState(EStates.Idle);
+        { 
+            _cat.SetAnimationState(EStates.Idle); 
+        }
 
-        if (Input.GetButton("Horizontal"))
-            Run();
+        if (input.Horizontal != 0)
+        { 
+            Run(input); 
+        }
 
-        if (IsGrounded() && Input.GetKeyDown(KeyCode.Space))
-            Jump();
+        if (IsGrounded() && input.JumpPressed)
+        { 
+            Jump(); 
+        }
     }
 
     public bool IsGroundedPublic()
@@ -31,18 +47,6 @@ public class CatMovementService
         return IsGrounded();
     }
 
-    private void Run()
-    {
-        if (IsGrounded())
-        {
-            _cat.SetAnimationState(EStates.Run);
-        }
-
-        var horizInput = Input.GetAxis("Horizontal");
-
-        _cat.SetVelocity(new Vector2(horizInput * _config.Speed, _cat.GetVelocity().y));
-        _cat.FlipDirection(horizInput);
-    }
 
     private bool IsGrounded()
     {
@@ -58,10 +62,39 @@ public class CatMovementService
         }
     }
 
+    private void Run(InputService input)
+    {
+        if (IsGrounded())
+        {
+            _cat.SetAnimationState(EStates.Run);
+        }
+
+        var horizInput = input.Horizontal;
+
+        _cat.SetVelocity(new Vector2(horizInput * _config.Speed, _cat.GetVelocity().y));
+        _cat.FlipDirection(horizInput);
+    }
+
     private void Jump()
     {
         _cat.AddForce(Vector2.up * _config.JumpForce, ForceMode2D.Impulse);
-
     }
 
+    private void CheckAirDeath()
+    {
+        if (!IsGrounded())
+        {
+            _airTime += Time.deltaTime;
+            if (_airTime >= _config.MaxAirTime)
+            {
+
+                AirDeath?.Invoke();
+                _airTime = 0;
+            }
+        }
+        else
+        {
+            _airTime = 0;
+        }
+    }
 }

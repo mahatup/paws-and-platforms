@@ -7,6 +7,8 @@ public class Beetle : MonoBehaviour
     [SerializeField] private Rigidbody2D _rigidBody2D;
     [SerializeField] private SpriteRenderer _spriteRenderer;
 
+    public Vector2 Position => transform.position;
+    public Vector2 Velocity => _rigidBody2D.velocity;
 
     public void SetVelosity(Vector2 velocity)
     {
@@ -17,10 +19,4 @@ public class Beetle : MonoBehaviour
     {
         _spriteRenderer.flipX = !_spriteRenderer.flipX;
     }
-
-    public void Stop()
-    {
-        _rigidBody2D.velocity = Vector2.zero;
-    }
-
 }

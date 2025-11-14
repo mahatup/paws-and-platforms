@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 5
   _jumpForce: 18
-  _knockForce: 7
   _lives: 3
   _maxAirTime: 2
+  _knockForce: 12
+  _knockbackSideHorizontal: 0.5
+  _knockbackSideVertical: 0.3

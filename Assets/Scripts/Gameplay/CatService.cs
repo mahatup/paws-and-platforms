@@ -15,12 +15,11 @@ public class CatService : MonoBehaviour
     [SerializeField] private Cat _cat;
     [SerializeField] private CatConfig _config;
 
+    private InputService _inputService;
     private CatHealthService _healthService;
     private CatMovementService _movementService;
     private CatTriggerService _catTriggerService;
     private CatKnockbackService _knockbackService;
-
-    private float _airTime = 0f;
 
     public event Action HeartDropped;
     public event Action<int> HeartSpawned;
@@ -31,14 +30,17 @@ public class CatService : MonoBehaviour
 
     private void Awake()
     {
+        _inputService = new InputService();
         _healthService = new CatHealthService(_config.Lives);
         _movementService = new CatMovementService(_cat, _config);
         _catTriggerService = new CatTriggerService();
-        _knockbackService = new CatKnockbackService(_cat);
+        _knockbackService = new CatKnockbackService(_cat, _config);
 
         _healthService.HeartDropped += OnHeartDropped;
         _healthService.HeartSpawned += OnHeartSpawned;
         _healthService.Dead += OnDead;
+
+        _movementService.AirDeath += OnDead;
 
         _catTriggerService.CoinCollected += OnCoinCollected;
         _catTriggerService.KeyCollected += OnKeyCollected;
@@ -48,15 +50,19 @@ public class CatService : MonoBehaviour
     private void OnEnable()
     {
         EventManager.CatKnocked += OnCatKnocked;
+        EventManager.EnemyKilled += OnEnemyKilled;
     }
 
     private void OnDisable()
     {
         EventManager.CatKnocked -= OnCatKnocked;
+        EventManager.EnemyKilled -= OnEnemyKilled;
 
         _healthService.HeartDropped -= HeartDropped;
         _healthService.HeartSpawned -= HeartSpawned;
         _healthService.Dead -= OnDead;
+
+        _movementService.AirDeath -= OnDead;
 
         _catTriggerService.CoinCollected -= OnCoinCollected;
         _catTriggerService.KeyCollected -= OnKeyCollected;
@@ -68,6 +74,8 @@ public class CatService : MonoBehaviour
     private void OnCoinCollected() => CoinCollected?.Invoke();
     private void OnKeyCollected() => KeyCollected?.Invoke();
     private void OnSpaceShipStepped() => SpaceShipStepped?.Invoke();
+    private void OnDead() => Dead?.Invoke();
+    
 
     private void Start()
     {
@@ -81,43 +89,25 @@ public class CatService : MonoBehaviour
             return;
         }
 
-        _movementService.HandleInput();
-        HandleAirTimeDeath();
+        _inputService.ReadInput();
+        _movementService.Update(_inputService);
     }
-    private void HandleAirTimeDeath()
-    {
-        bool isGrounded = _movementService.IsGroundedPublic(); 
-
-        if (!isGrounded)
-        {
-            _airTime += Time.deltaTime;
-            if (_airTime >= _config.MaxAirTime)
-            {
-                
-                Dead?.Invoke();
-                _airTime = 0;
-            }
-        }
-        else
-        {
-            _airTime = 0;
-        }
-    }
-
+   
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         _catTriggerService.HandleTrigger(collision);
     }
 
-    private void OnCatKnocked()
+    private void OnCatKnocked(Vector2 sourcePosition, Vector2 sourceVelocity)
     {
-        _knockbackService.ApplyKnockback(transform.position);
+        _knockbackService.ApplyKnockback(sourcePosition, sourceVelocity);
         _healthService.TakeHeart();
     }
-    
-    private void OnDead()
+
+    private void OnEnemyKilled(Vector2 sourcePosition, Vector2 sourceVelocity)
     {
-        Dead?.Invoke(); 
+        _knockbackService.ApplyKnockback(sourcePosition, sourceVelocity);
     }
+
 }

@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: BeetleConfig
   m_EditorClassIdentifier: 
   _speed: 2
-  _knockCooldown: 0.41
+  _knockCooldown: 0.6
   _knockReactionDelay: 0.1
   _knockForce: 8
-  _deathBounceForce: 20
+  _deathBounceForce: 15
   _raycastForwardDistance: 0.1
   _raycastOriginOffset: 0.6
   _raycastUpOffset: 0.2
