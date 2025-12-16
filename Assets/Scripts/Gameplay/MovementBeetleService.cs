@@ -1,32 +1,25 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
+using System.Threading;
 using UnityEngine;
 
 public class MovementBeetleService : MonoBehaviour
 {   
     [SerializeField] private Beetle _beetle;
     [SerializeField] private BeetleConfig _config;
-
     [SerializeField] private LayerMask _catLayer;
 
     private float _speed;
 
-    public void Enable()
-    {
-        enabled = true;
-    }
-
-    public void Disable()
-    {
-        enabled = false;
-    }
-
+    private CancellationTokenSource _deathCts;
 
     private void Awake()
     {
         _speed = _config.Speed;
+
+        _deathCts = new CancellationTokenSource();
     }
 
     void FixedUpdate()
@@ -39,6 +32,16 @@ public class MovementBeetleService : MonoBehaviour
         Move();
         Knock();
         CheakDeath();
+    }
+
+    private void OnDestroy()
+    {
+        if (_deathCts != null)
+        {
+            _deathCts.Cancel();
+            _deathCts.Dispose();
+            _deathCts = null;
+        }
     }
 
     private void Move()
@@ -83,19 +86,19 @@ public class MovementBeetleService : MonoBehaviour
         if (hit.collider != null)
         {
             EventManager.OnEnemyKilled(_beetle.Position, Vector2.zero);
-            StartCoroutine(DieAfterDelay());
+            DieAfterDelayAsync(_deathCts.Token).Forget();
         }
     }
 
-    private IEnumerator DieAfterDelay()
+    private async UniTaskVoid DieAfterDelayAsync(CancellationToken token)
     {
-        yield return new WaitForFixedUpdate();
+        await UniTask.WaitForFixedUpdate();
+
         Dead();
     }
 
     private void Dead()
     {
-        Disable();
         Destroy(gameObject);
     } 
 }

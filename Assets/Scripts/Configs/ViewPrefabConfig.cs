@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+//TODO: сделать базовую вьюшку
 [CreateAssetMenu(fileName = nameof(ViewPrefabConfig),
     menuName = "Configs/UI/ViewPrefabConfig")]
 public class ViewPrefabConfig : ScriptableObject

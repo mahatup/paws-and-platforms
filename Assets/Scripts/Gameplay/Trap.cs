@@ -10,7 +10,7 @@ public class Trap : MonoBehaviour
     [SerializeField] private float _cooldownTime;
     [SerializeField] private float _radius;
 
-    private bool _isOnCooldown = false;
+    private bool _isOnCooldown;
 
     private void FixedUpdate()
     {

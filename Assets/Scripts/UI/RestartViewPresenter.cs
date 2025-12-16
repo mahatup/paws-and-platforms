@@ -20,8 +20,8 @@ public class RestartViewPresenter : MonoBehaviour
 
     private void Awake()
     {
-        _viewFactory = new ViewFactory(_config, transform);
-        _restartView = _viewFactory.CreateRestartView();
+        _viewFactory = new ViewFactory(transform);
+        _restartView = _viewFactory.CreateView(_config.RestartViewPrefab);
     }
 
     private void OnEnable()
@@ -64,6 +64,5 @@ public class RestartViewPresenter : MonoBehaviour
         GameManager.StaticSkipIntroNextLoad = true;
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        
     }
 }

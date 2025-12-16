@@ -9,7 +9,7 @@ public class CatTriggerService
     public event Action KeyCollected;
     public event Action SpaceShipStepped;
 
-    public void HandleTrigger(Collider2D collision)
+    public void SetCollision(Collider2D collision)
     {
         if (collision.TryGetComponent(out Coin _))
         {

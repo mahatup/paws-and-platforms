@@ -7,24 +7,24 @@ using System.Threading;
 
 public class AbsenceKeyViewPresenter : MonoBehaviour
 {
-    [SerializeField] private ViewPrefabConfig _viewConfig;
-    [SerializeField] private LevelExitService _levelExitService;
-
+    [SerializeField] private ViewPrefabConfig _config;
+    [SerializeField] private GameManager _gameManager;
+    [SerializeField] private float _messageDuration;
     private ViewFactory _viewFactory;
 
     private void Awake()
     {
-        _viewFactory = new ViewFactory(_viewConfig, transform);
+        _viewFactory = new ViewFactory(transform);
     }
 
     private void OnEnable()
     {
-        _levelExitService.KeyNotCollected += OnKeyNotCollected;
+        _gameManager.KeyNotCollected += OnKeyNotCollected;
     }
 
     private void OnDisable()
     {
-        _levelExitService.KeyNotCollected -= OnKeyNotCollected;
+        _gameManager.KeyNotCollected -= OnKeyNotCollected;
     }
 
     private void OnKeyNotCollected()
@@ -34,9 +34,9 @@ public class AbsenceKeyViewPresenter : MonoBehaviour
 
     private async UniTaskVoid ShowTemporaryMessageAsync(CancellationToken token)
     {
-        var view = _viewFactory.CreateAbsenceKeyView();
+        var view = _viewFactory.CreateView(_config.AbsenceKeyViewPrefab);
 
-        await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: token);
+        await UniTask.Delay(TimeSpan.FromSeconds(_messageDuration), cancellationToken: token);
 
         Destroy(view.gameObject);
     }

@@ -1,17 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class CatKnockbackService
 {
     private Cat _cat;
-    private CatConfig _config;
+    private CatKnockbackConfig _config;
 
-    public CatKnockbackService(Cat cat, CatConfig catConfig)
+    public CatKnockbackService(Cat cat, CatKnockbackConfig config)
     {
         _cat = cat;
-        _config = catConfig;
+        _config = config;
     }
 
     public void ApplyKnockback(Vector2 sourcePosition, Vector2 sourceVelocity)

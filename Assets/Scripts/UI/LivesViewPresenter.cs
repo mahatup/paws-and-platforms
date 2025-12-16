@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+//TODO: потом разобраться 
 public class LivesViewPresenter : MonoBehaviour
 {
     [SerializeField] private CatService _catService;
@@ -14,8 +14,7 @@ public class LivesViewPresenter : MonoBehaviour
 
     private void Awake()
     {
-        _viewFactory = new ViewFactory(_config, transform);
-
+        _viewFactory = new ViewFactory(transform);
         _livesView = _config.LivesViewPrefab.GetComponent<LivesView>();
     }
 
@@ -39,7 +38,9 @@ public class LivesViewPresenter : MonoBehaviour
 
         for (int i = 0; i < lives; i++)
         {
-            var heartObj = _viewFactory.CreateLivesView();
+            var heartObj = _viewFactory.CreateView(_config.LivesViewPrefab);
+
+            heartObj.transform.SetParent(transform, false);
 
             RectTransform rect = heartObj.GetComponent<RectTransform>();
 

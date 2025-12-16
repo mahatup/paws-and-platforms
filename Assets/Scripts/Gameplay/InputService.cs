@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class InputService
 {
-    public float Horizontal {  get; private set; }
-    public bool JumpPressed { get; private set; }
+    private InputConfig _config;
 
-    public void ReadInput()
+    public InputService(InputConfig config)
     {
-        Horizontal = Input.GetAxis("Horizontal");
-        JumpPressed = Input.GetKeyDown(KeyCode.Space);
+        _config = config;
     }
+
+    public float MoveAxis => Input.GetAxis(_config.Axis);
+    public bool IsJumpPressed => Input.GetKeyDown(_config.JumpKey);
+    public bool IsSkipPressed => Input.GetKeyDown(_config.SkipKey);
+
 }

@@ -15,8 +15,8 @@ public class CoinCounterViewPresenter : MonoBehaviour
 
     private void Awake()
     {
-        _viewFactory = new ViewFactory(_config, transform);
-        _coinCounterView = _viewFactory.CreateCoinCounterView();
+        _viewFactory = new ViewFactory(transform);
+        _coinCounterView = _viewFactory.CreateView(_config.CoinCounterViewPrefab);
     }
 
     private void OnEnable()

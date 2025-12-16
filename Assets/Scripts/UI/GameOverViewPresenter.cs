@@ -2,27 +2,31 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class GameOverViewPresenter : MonoBehaviour
+//TODO: обдумать данную сущность
+public class GameOverViewPresenter : MonoBehaviour    
 {
     [SerializeField] private ViewPrefabConfig _config;
-    [SerializeField] private LevelExitService _levelExitService;
+    [SerializeField] private GameManager _gameManager;
 
     private ViewFactory _viewFactory;
     private GameOverView _gameOverView;
 
     private void Awake()
     {
-        _viewFactory = new ViewFactory(_config, transform);
-        _viewFactory.CreateGameOverView();
+        _viewFactory = new ViewFactory(transform);
+        _gameOverView = _viewFactory.CreateView(_config.GameOverViewPrefab);
 
-        _levelExitService.LevelCompleted += OnLevelCompleted;
+        _gameManager.LevelCompleted += OnLevelCompleted;
     }
-
 
     private void OnDisable()
     {
-        _levelExitService.LevelCompleted -= OnLevelCompleted;
+        _gameManager.LevelCompleted -= OnLevelCompleted;
+    }
+
+    public void SetActive(bool active)
+    {
+        gameObject.SetActive(active);
     }
 
     private void OnLevelCompleted()

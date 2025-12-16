@@ -21,7 +21,7 @@ public class CatHealthService
         HeartSpawned?.Invoke(_lives);
     }
 
-    public void TakeHeart()
+    public void DecreaseHealth()
     {
         _lives--;
         HeartDropped?.Invoke();

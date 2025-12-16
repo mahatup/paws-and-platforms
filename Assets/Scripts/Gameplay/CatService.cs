@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Analytics;
+
 public enum EStates
 {
     Idle,
@@ -13,7 +15,12 @@ public enum EStates
 public class CatService : MonoBehaviour
 {
     [SerializeField] private Cat _cat;
-    [SerializeField] private CatConfig _config;
+    [SerializeField] private CatConfig _catConfig;
+    [SerializeField] private CatKnockbackConfig _catKnockbackConfig;
+    [SerializeField] private InputConfig _inputConfig;
+    [SerializeField] private Camera _camera;
+
+    private bool _canMove = false;
 
     private InputService _inputService;
     private CatHealthService _healthService;
@@ -30,11 +37,11 @@ public class CatService : MonoBehaviour
 
     private void Awake()
     {
-        _inputService = new InputService();
-        _healthService = new CatHealthService(_config.Lives);
-        _movementService = new CatMovementService(_cat, _config);
+        _inputService = new InputService(_inputConfig);
+        _healthService = new CatHealthService(_catConfig.Lives);
+        _movementService = new CatMovementService(_cat, _catConfig, _inputService);
         _catTriggerService = new CatTriggerService();
-        _knockbackService = new CatKnockbackService(_cat, _config);
+        _knockbackService = new CatKnockbackService(_cat, _catKnockbackConfig);
 
         _healthService.HeartDropped += OnHeartDropped;
         _healthService.HeartSpawned += OnHeartSpawned;
@@ -45,6 +52,8 @@ public class CatService : MonoBehaviour
         _catTriggerService.CoinCollected += OnCoinCollected;
         _catTriggerService.KeyCollected += OnKeyCollected;
         _catTriggerService.SpaceShipStepped += OnSpaceShipStepped;
+
+        _healthService.Init();
     }
 
     private void OnEnable()
@@ -53,61 +62,63 @@ public class CatService : MonoBehaviour
         EventManager.EnemyKilled += OnEnemyKilled;
     }
 
+    private void Start()
+    {
+        _camera.CameraReady += OnCameraReady;
+        _camera.Construct(_cat);
+    }
+
     private void OnDisable()
     {
+        _camera.CameraReady -= OnCameraReady;
+
         EventManager.CatKnocked -= OnCatKnocked;
         EventManager.EnemyKilled -= OnEnemyKilled;
 
-        _healthService.HeartDropped -= HeartDropped;
-        _healthService.HeartSpawned -= HeartSpawned;
+        _healthService.HeartDropped -= OnHeartDropped;
+        _healthService.HeartSpawned -= OnHeartSpawned;
         _healthService.Dead -= OnDead;
 
         _movementService.AirDeath -= OnDead;
 
         _catTriggerService.CoinCollected -= OnCoinCollected;
         _catTriggerService.KeyCollected -= OnKeyCollected;
-        _catTriggerService.SpaceShipStepped += OnSpaceShipStepped;
-    }
+        _catTriggerService.SpaceShipStepped -= OnSpaceShipStepped;
 
+        
+    }
+    private void OnCameraReady() => _canMove = true;
     private void OnHeartDropped() => HeartDropped?.Invoke();
     private void OnHeartSpawned(int count) => HeartSpawned?.Invoke(count);
     private void OnCoinCollected() => CoinCollected?.Invoke();
     private void OnKeyCollected() => KeyCollected?.Invoke();
     private void OnSpaceShipStepped() => SpaceShipStepped?.Invoke();
     private void OnDead() => Dead?.Invoke();
-    
 
-    private void Start()
-    {
-        _healthService.Init();
-    }
-
+    //TODO: разобраться с гейм менеджером
     private void Update()
     {
-        if (GameManager.Instance.State != GameState.Playing)
+        if (!_canMove || GameManager.Instance.State != GameState.Playing)
         {
             return;
         }
 
-        _inputService.ReadInput();
-        _movementService.Update(_inputService);
+        _movementService.Update();
     }
-   
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        _catTriggerService.HandleTrigger(collision);
+        _catTriggerService.SetCollision(collision);
     }
 
     private void OnCatKnocked(Vector2 sourcePosition, Vector2 sourceVelocity)
     {
         _knockbackService.ApplyKnockback(sourcePosition, sourceVelocity);
-        _healthService.TakeHeart();
+        _healthService.DecreaseHealth();
     }
 
     private void OnEnemyKilled(Vector2 sourcePosition, Vector2 sourceVelocity)
     {
         _knockbackService.ApplyKnockback(sourcePosition, sourceVelocity);
     }
-
 }

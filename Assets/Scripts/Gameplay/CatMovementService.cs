@@ -2,55 +2,50 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class CatMovementService
 {
     private Cat _cat;
     private CatConfig _config;
     private float _airTime;
+    private InputService _inputService;
 
     public event Action AirDeath;
 
-    public CatMovementService(Cat cat, CatConfig config)
+    public CatMovementService(Cat cat, CatConfig config, InputService inputService)
     {
         _cat = cat;
         _config = config;
+        _inputService = inputService;
     }
 
-    public void Update(InputService input)
+    public void Update()
     {
-        HandleMovement(input);
+        HandleMovement();
         CheckAirDeath();
     }
 
-    public void HandleMovement(InputService input)
+    private void HandleMovement()
     {
         if (IsGrounded())
         { 
             _cat.SetAnimationState(EStates.Idle); 
         }
 
-        if (input.Horizontal != 0)
+        if (_inputService.MoveAxis != 0)
         { 
-            Run(input); 
+            Run(); 
         }
 
-        if (IsGrounded() && input.JumpPressed)
+        if (IsGrounded() && _inputService.IsJumpPressed)
         { 
             Jump(); 
         }
     }
 
-    public bool IsGroundedPublic()
-    {
-        return IsGrounded();
-    }
-
-
     private bool IsGrounded()
     {
-        Collider2D[] collider2D = Physics2D.OverlapCircleAll(_cat.transform.position, 0.2f);
+        var collider2D = Physics2D.OverlapCircleAll(_cat.Position, 0.2f);
         if (collider2D.Length > 1)
         {
             return true;
@@ -62,16 +57,16 @@ public class CatMovementService
         }
     }
 
-    private void Run(InputService input)
+    private void Run()
     {
         if (IsGrounded())
         {
             _cat.SetAnimationState(EStates.Run);
         }
 
-        var horizInput = input.Horizontal;
+        var horizInput = _inputService.MoveAxis;
 
-        _cat.SetVelocity(new Vector2(horizInput * _config.Speed, _cat.GetVelocity().y));
+        _cat.SetVelocity(new Vector2(horizInput * _config.Speed, _cat.Velocity.y));
         _cat.FlipDirection(horizInput);
     }
 
@@ -87,7 +82,6 @@ public class CatMovementService
             _airTime += Time.deltaTime;
             if (_airTime >= _config.MaxAirTime)
             {
-
                 AirDeath?.Invoke();
                 _airTime = 0;
             }

@@ -6,7 +6,7 @@ using UnityEngine;
 public class ReceiveKeyViewPresenter : MonoBehaviour
 {
     [SerializeField] private CatService _catService;
-    [SerializeField] private ViewPrefabConfig _viewConfig;
+    [SerializeField] private ViewPrefabConfig _config;
 
     private ViewFactory _viewFactory;
     private ReceiveKeyView _receiveKeyView;
@@ -15,7 +15,7 @@ public class ReceiveKeyViewPresenter : MonoBehaviour
 
     private void Awake()
     {
-        _viewFactory = new ViewFactory(_viewConfig, transform);
+        _viewFactory = new ViewFactory(transform);
     }
 
     private void OnEnable()
@@ -30,7 +30,7 @@ public class ReceiveKeyViewPresenter : MonoBehaviour
 
     private void OnKeyCollected()
     {
-        _receiveKeyView = _viewFactory.CreateReceiveKeyView();
+        _receiveKeyView = _viewFactory.CreateView(_config.ReceiveKeyViewPrefab);
         KeyCollected?.Invoke();
         ClearNotificationAfterDelay(2f); 
     }
@@ -39,8 +39,10 @@ public class ReceiveKeyViewPresenter : MonoBehaviour
     {
         await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(delaySeconds));
 
-        if (_receiveKeyView != null)
+        if (_receiveKeyView != null) 
+        { 
             _receiveKeyView.ClearText();
+        }
     }
 }
 
