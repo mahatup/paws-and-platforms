@@ -73,7 +73,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -7379196344205307902, guid: dcb71080eeeb5cd4e93f398bfac90c98, type: 3}
+  m_Sprite: {fileID: -7379196344205307902, guid: dcb71080eeeb5cd4e93f398bfac90c98,
+    type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0
@@ -226,6 +227,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c5f142372ae279448f2d659b5b91f60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _rigidBody2D: {fileID: 0}
+  _spriteRenderer: {fileID: 0}
 --- !u!114 &6032536913975642859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -238,11 +241,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46abd3a35e5f2f54ea2bf770a8b30248, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 1
+  _beetle: {fileID: 0}
+  _config: {fileID: 0}
   _catLayer:
     serializedVersion: 2
-    m_Bits: 64
-  _groundedLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  _catRigidBody2D: {fileID: 0}
+    m_Bits: 0

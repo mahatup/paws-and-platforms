@@ -185,7 +185,8 @@ MonoBehaviour:
     \u043A \u0440\u0430\u043A\u0435\u0442\u0435"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 73177e6164f170c469a7827a7164d478, type: 2}
-  m_sharedMaterial: {fileID: -8571528518589662067, guid: 73177e6164f170c469a7827a7164d478, type: 2}
+  m_sharedMaterial: {fileID: -8571528518589662067, guid: 73177e6164f170c469a7827a7164d478,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

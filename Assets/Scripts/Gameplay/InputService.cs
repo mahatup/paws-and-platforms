@@ -1,18 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
+using Assets.Scripts.Configs;
 using UnityEngine;
+using Zenject;
 
-public class InputService
+namespace Assets.Scripts.Gameplay
 {
-    private InputConfig _config;
-
-    public InputService(InputConfig config)
+    public class InputService
     {
-        _config = config;
+        private InputConfig _inputConfig;
+
+        [Inject]
+        public InputService(ConfigsService configService)
+        {
+            _inputConfig = configService.GetConfig<InputConfig>();
+        }
+
+        public float MoveAxis => Input.GetAxis(_inputConfig.Axis);
+        public bool IsJumpPressed => Input.GetKeyDown(_inputConfig.JumpKey);
+        public bool IsSkipPressed => Input.GetKeyDown(_inputConfig.SkipKey);
+
     }
-
-    public float MoveAxis => Input.GetAxis(_config.Axis);
-    public bool IsJumpPressed => Input.GetKeyDown(_config.JumpKey);
-    public bool IsSkipPressed => Input.GetKeyDown(_config.SkipKey);
-
 }

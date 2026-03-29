@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = nameof(CatKnockbackConfig),
-    menuName = "Configs/Core/CatKnockbackConfig")]
+    menuName = "Configs/Infrastructure/CatKnockbackConfig")]
 public class CatKnockbackConfig : ScriptableObject
 {
     [SerializeField] private uint _knockForce;

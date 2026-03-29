@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = nameof(BeetleConfig),
-    menuName = "Configs/Core/BeetleConfig")]
+    menuName = "Configs/Infrastructure/BeetleConfig")]
 public class BeetleConfig : ScriptableObject
 {
     [SerializeField] private float _speed;

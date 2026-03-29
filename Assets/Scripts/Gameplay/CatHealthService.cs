@@ -1,34 +1,33 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
 
-public class CatHealthService
+namespace Assets.Scripts.Gameplay
 {
-    private int _lives;
-
-    public event Action HeartDropped;
-    public event Action<int> HeartSpawned;
-    public event Action Dead;
-
-    public CatHealthService(int startLives)
+    public class CatHealthService
     {
-        _lives = startLives;
-    }
-    public void Init()
-    {
-        HeartSpawned?.Invoke(_lives);
-    }
+        private int _lives;
 
-    public void DecreaseHealth()
-    {
-        _lives--;
-        HeartDropped?.Invoke();
+        public event Action HeartDropped;
+        public event Action<int> HeartSpawned;
+        public event Action Dead;
 
-        if (_lives <= 0)
-        { 
-            Dead?.Invoke(); 
+        public CatHealthService(int startLives)
+        {
+            _lives = startLives;
+        }
+        public void Init()
+        {
+            HeartSpawned?.Invoke(_lives);
+        }
+
+        public void DecreaseHealth()
+        {
+            _lives--;
+            HeartDropped?.Invoke();
+
+            if (_lives <= 0)
+            {
+                Dead?.Invoke();
+            }
         }
     }
 }

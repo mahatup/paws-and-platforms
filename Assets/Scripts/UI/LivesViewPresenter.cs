@@ -1,64 +1,48 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-//TODO: потом разобраться 
-public class LivesViewPresenter : MonoBehaviour
+using Assets.Scripts.Gameplay;
+using System;
+using Zenject;
+
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private CatService _catService;
-    [SerializeField] private ViewPrefabConfig _config;
-    [SerializeField] private ViewFactory _viewFactory;
-    [SerializeField] private float _distance = 100f;
-    [SerializeField] private float _margin = 30f;
-
-    private LivesView _livesView;
-
-    private void Awake()
+    public class LivesViewPresenter : IInitializable, IDisposable
     {
-        _viewFactory = new ViewFactory(transform);
-        _livesView = _config.LivesViewPrefab.GetComponent<LivesView>();
-    }
+        private CatService _catService;
 
-    private void OnEnable()
-    {
-        _catService.HeartSpawned += OnHeartSpawned;
-        _catService.HeartDropped += OnHeartDropped;
-    }
+        private ViewService _viewService;
+        private LivesView _livesView;
 
-    private void OnDisable()
-    {
-        _catService.HeartSpawned -= OnHeartSpawned;
-        _catService.HeartDropped -= OnHeartDropped;
-    }
-
-    private void OnHeartSpawned(int lives)
-    {
-        RectTransform canvasRect = GetComponent<Canvas>().GetComponent<RectTransform>();
-        float canvasWidth = canvasRect.rect.width;
-        float canvasHeight = canvasRect.rect.height;
-
-        for (int i = 0; i < lives; i++)
+        [Inject]
+        public LivesViewPresenter(
+        CatService catService,
+        ViewService viewService)
         {
-            var heartObj = _viewFactory.CreateView(_config.LivesViewPrefab);
-
-            heartObj.transform.SetParent(transform, false);
-
-            RectTransform rect = heartObj.GetComponent<RectTransform>();
-
-            float xPos = -_margin - (i * _distance);
-            float yPos = _margin;
-
-            rect.anchoredPosition = new Vector2(xPos, yPos);
-
-            GameObject whole = heartObj.transform.Find("WholeHeart").gameObject;
-            GameObject broken = heartObj.transform.Find("BrokenHeart").gameObject;
-
-            _livesView.AddHeart(whole, broken);
+            _catService = catService;
+            _viewService = viewService;
         }
-    }
 
-    private void OnHeartDropped()
-    {
-        _livesView?.BreakLastHeart();
+        public void Initialize()
+        {
+            _livesView = _viewService.GetView<LivesView>();
+
+            _catService.HeartSpawned += OnHeartSpawned;
+            _catService.HeartDropped += OnHeartDropped;
+        }
+
+        public void Dispose()
+        {
+            _catService.HeartSpawned -= OnHeartSpawned;
+            _catService.HeartDropped -= OnHeartDropped; ;
+        }
+
+        private void OnHeartSpawned(int lives)
+        {
+            _livesView.Initialize(lives);
+        }
+
+        private void OnHeartDropped()
+        {
+            _livesView?.BreakLastHeart();
+        }
+
     }
 }
-

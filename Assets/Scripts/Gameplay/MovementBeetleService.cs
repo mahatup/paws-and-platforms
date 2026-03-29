@@ -1,104 +1,117 @@
+using Assets.Scripts.Configs;
 using Cysharp.Threading.Tasks;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using Zenject;
 
-public class MovementBeetleService : MonoBehaviour
-{   
-    [SerializeField] private Beetle _beetle;
-    [SerializeField] private BeetleConfig _config;
-    [SerializeField] private LayerMask _catLayer;
-
-    private float _speed;
-
-    private CancellationTokenSource _deathCts;
-
-    private void Awake()
+namespace Assets.Scripts.Gameplay
+{
+    public class MovementBeetleService : MonoBehaviour
     {
-        _speed = _config.Speed;
+        [SerializeField] private Beetle _beetle;
+        [SerializeField] private LayerMask _catLayer;
 
-        _deathCts = new CancellationTokenSource();
-    }
+        private GameManager _gameManager;
+        private BeetleConfig _beetleConfig;
 
-    void FixedUpdate()
-    {
-        if (GameManager.Instance.State != GameState.Playing)
+        private float _speed;
+
+        private CancellationTokenSource _deathCts;
+
+        [Inject]
+        public void Construct(
+            GameManager gameManager,
+            ConfigsService configService)
         {
-            return;
+            _gameManager = gameManager;
+            _beetleConfig = configService.GetConfig<BeetleConfig>();
         }
 
-        Move();
-        Knock();
-        CheakDeath();
-    }
-
-    private void OnDestroy()
-    {
-        if (_deathCts != null)
+        private void Awake()
         {
-            _deathCts.Cancel();
-            _deathCts.Dispose();
-            _deathCts = null;
-        }
-    }
+            _speed = _beetleConfig.Speed;
 
-    private void Move()
-    {
-        Vector2 direction = Vector2.right * Mathf.Sign(_speed);
-        Vector2 origin = (Vector2)transform.position + direction * _config.RaycastOriginOffset;
-        RaycastHit2D hit = Physics2D.Raycast(origin, direction, _config.RaycastForwardDistance);
-
-        if (hit.collider != null)
-        {
-            TurnAround();
+            _deathCts = new CancellationTokenSource();
         }
 
-        _beetle.SetVelosity(Vector2.right * _speed);
-    }
-
-    private void TurnAround()
-    {
-        _speed = -_speed;
-
-        _beetle.FlipDirection();
-    }
-
-    private void Knock()
-    {
-        Vector2 direction = Vector2.right * Mathf.Sign(_speed);
-        Vector2 origin = _beetle.Position + Vector2.up * _config.RaycastUpOffset + direction * _config.RaycastOriginOffset;
-        RaycastHit2D hit = Physics2D.Raycast(origin, direction, _config.RaycastForwardDistance, _catLayer);
-
-        if (hit.collider != null)
+        void FixedUpdate()
         {
-            EventManager.OnCatKnocked(_beetle.Position, _beetle.Velocity);
+            if (_gameManager.State != GameState.Playing)
+            {
+                return;
+            }
+
+            Move();
+            Knock();
+            CheakDeath();
+        }
+
+        private void OnDestroy()
+        {
+            if (_deathCts != null)
+            {
+                _deathCts.Cancel();
+                _deathCts.Dispose();
+                _deathCts = null;
+            }
+        }
+
+        private void Move()
+        {
+            Vector2 direction = Vector2.right * Mathf.Sign(_speed);
+            Vector2 origin = (Vector2)transform.position + direction * _beetleConfig.RaycastOriginOffset;
+            RaycastHit2D hit = Physics2D.Raycast(origin, direction, _beetleConfig.RaycastForwardDistance);
+
+            if (hit.collider != null)
+            {
+                TurnAround();
+            }
+
+            _beetle.SetVelosity(Vector2.right * _speed);
+        }
+
+        private void TurnAround()
+        {
+            _speed = -_speed;
+
+            _beetle.FlipDirection();
+        }
+
+        private void Knock()
+        {
+            Vector2 direction = Vector2.right * Mathf.Sign(_speed);
+            Vector2 origin = _beetle.Position2D + Vector2.up * _beetleConfig.RaycastUpOffset + direction * _beetleConfig.RaycastOriginOffset;
+            RaycastHit2D hit = Physics2D.Raycast(origin, direction, _beetleConfig.RaycastForwardDistance, _catLayer);
+
+            if (hit.collider != null)
+            {
+                EventManager.OnCatKnocked(_beetle);
+            }
+        }
+
+        private void CheakDeath()
+        {
+            Vector2 direction = Vector2.up;
+            Vector2 origin = (Vector2)transform.position + direction * _beetleConfig.RaycastOriginOffset;
+            RaycastHit2D hit = Physics2D.Raycast(origin, direction, _beetleConfig.DeathRaycastDistance, _catLayer);
+
+            if (hit.collider != null)
+            {
+                EventManager.OnEnemyKilled(_beetle);
+                DieAfterDelayAsync(_deathCts.Token).Forget();
+            }
+        }
+
+        private async UniTaskVoid DieAfterDelayAsync(CancellationToken token)
+        {
+            await UniTask.WaitForFixedUpdate();
+
+            Dead();
+        }
+
+        private void Dead()
+        {
+            Destroy(gameObject);
         }
     }
-
-    private void CheakDeath()
-    {
-        Vector2 direction = Vector2.up;
-        Vector2 origin = (Vector2)transform.position + direction * _config.RaycastOriginOffset;
-        RaycastHit2D hit = Physics2D.Raycast(origin, direction, _config.DeathRaycastDistance, _catLayer);
-
-        if (hit.collider != null)
-        {
-            EventManager.OnEnemyKilled(_beetle.Position, Vector2.zero);
-            DieAfterDelayAsync(_deathCts.Token).Forget();
-        }
-    }
-
-    private async UniTaskVoid DieAfterDelayAsync(CancellationToken token)
-    {
-        await UniTask.WaitForFixedUpdate();
-
-        Dead();
-    }
-
-    private void Dead()
-    {
-        Destroy(gameObject);
-    } 
 }

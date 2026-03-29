@@ -1,17 +1,21 @@
 using System;
 using UnityEngine;
-public class EventManager
+
+namespace Assets.Scripts.Gameplay
 {
-    public static event Action<Vector2, Vector2> CatKnocked;
-    public static event Action<Vector2, Vector2> EnemyKilled;
-
-    public static void OnCatKnocked(Vector2 sourcePosition, Vector2 sourceVelocity)
+    public class EventManager
     {
-        CatKnocked?.Invoke(sourcePosition, sourceVelocity);
-    }
+        public static event Action<IDamager> CatKnocked;
+        public static event Action<IDamager> EnemyKilled;
 
-    public static void OnEnemyKilled(Vector2 sourcePosition, Vector2 sourceVelocity)
-    {
-        EnemyKilled?.Invoke(sourcePosition, sourceVelocity);
+        public static void OnCatKnocked(IDamager damager)
+        {
+            CatKnocked?.Invoke(damager);
+        }
+
+        public static void OnEnemyKilled(IDamager damager)
+        {
+            EnemyKilled?.Invoke(damager);
+        }
     }
 }

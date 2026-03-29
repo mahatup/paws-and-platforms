@@ -1,31 +1,21 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class Trap : MonoBehaviour
+namespace Assets.Scripts.Gameplay
 {
-    [SerializeField] private LayerMask _catLayer;
-    [SerializeField] private float _cooldownTime;
-    [SerializeField] private float _radius;
-
-    private bool _isOnCooldown;
-
-    private void FixedUpdate()
+    public class Trap : MonoBehaviour, IDamager
     {
-        Collider2D cat = Physics2D.OverlapCircle(transform.position, _radius, _catLayer);
-        if (!_isOnCooldown && cat != null)
+        public Vector2 Position2D => new(transform.position.x, transform.position.y);
+        public Vector2 Velocity2D => default;
+
+        private void OnTriggerEnter2D(Collider2D collision)
         {
-            EventManager.OnCatKnocked(transform.position, Vector2.zero);
-            StartCoroutine(Cooldown());
+            var cat = collision.attachedRigidbody.GetComponent<Cat>();
+            if (cat != null)
+            {
+                cat.SetDamage(this);
+            }
         }
-    }
 
-    private IEnumerator Cooldown()
-    {
-        _isOnCooldown = true;
-        yield return new WaitForSeconds(_cooldownTime);
-        _isOnCooldown = false;
     }
 }

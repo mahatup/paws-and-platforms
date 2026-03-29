@@ -1,37 +1,43 @@
+using Assets.Scripts.Gameplay;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Zenject;
 
-public class CoinCounterViewPresenter : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private CatService _catService;
-    [SerializeField] private ViewPrefabConfig _config;
-
-    private CoinCounterView _coinCounterView;
-
-    private int _coinCounter;
-    private ViewFactory _viewFactory;
-
-    private void Awake()
+    public class CoinCounterViewPresenter : IInitializable, IDisposable
     {
-        _viewFactory = new ViewFactory(transform);
-        _coinCounterView = _viewFactory.CreateView(_config.CoinCounterViewPrefab);
-    }
+        private CatService _catService;
+        private ViewService _viewService;
 
-    private void OnEnable()
-    {
-        _catService.CoinCollected += OnCoinCollected;
-    }
+        private CoinCounterView _coinCounterView;
 
-    private void OnDisable()
-    {
-        _catService.CoinCollected -= OnCoinCollected;
-    }
+        private int _coinCounter;
 
-    private void OnCoinCollected()
-    {
-        _coinCounter++;
-        _coinCounterView.SetCounterCoin(_coinCounter);
+        [Inject]
+        public CoinCounterViewPresenter(
+            CatService catService,
+            ViewService viewService)
+        {
+            _catService = catService;
+            _viewService = viewService;
+        }
+
+        public void Initialize()
+        {
+            _coinCounterView = _viewService.GetView<CoinCounterView>();
+
+            _catService.CoinCollected += OnCoinCollected;
+        }
+
+        public void Dispose()
+        {
+            _catService.CoinCollected -= OnCoinCollected;
+        }
+
+        private void OnCoinCollected()
+        {
+            _coinCounter++;
+            _coinCounterView.SetCounterCoin(_coinCounter);
+        }
     }
 }

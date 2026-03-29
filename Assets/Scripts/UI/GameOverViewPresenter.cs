@@ -1,35 +1,39 @@
+using Assets.Scripts.Gameplay;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-//TODO: обдумать данную сущность
-public class GameOverViewPresenter : MonoBehaviour    
+using Zenject;
+
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private ViewPrefabConfig _config;
-    [SerializeField] private GameManager _gameManager;
-
-    private ViewFactory _viewFactory;
-    private GameOverView _gameOverView;
-
-    private void Awake()
+    public class GameOverViewPresenter : IInitializable, IDisposable
     {
-        _viewFactory = new ViewFactory(transform);
-        _gameOverView = _viewFactory.CreateView(_config.GameOverViewPrefab);
+        private GameManager _gameManager;
+        private ViewService _viewService;
 
-        _gameManager.LevelCompleted += OnLevelCompleted;
-    }
+        private GameOverView _gameOverView;
 
-    private void OnDisable()
-    {
-        _gameManager.LevelCompleted -= OnLevelCompleted;
-    }
+        public GameOverViewPresenter(
+        GameManager gameManager,
+        ViewService viewService)
+        {
+            _gameManager = gameManager;
+            _viewService = viewService;
+        }
 
-    public void SetActive(bool active)
-    {
-        gameObject.SetActive(active);
-    }
+        public void Initialize()
+        {
+            _gameOverView = _viewService.GetView<GameOverView>();
 
-    private void OnLevelCompleted()
-    {
+            _gameManager.LevelCompleted += OnLevelCompleted;
+        }
+
+        public void Dispose()
+        {
+            _gameManager.LevelCompleted -= OnLevelCompleted;
+        }
+
+        private void OnLevelCompleted()
+        {
+            _gameOverView.Show();
+        }
     }
 }

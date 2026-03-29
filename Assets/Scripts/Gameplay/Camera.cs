@@ -1,33 +1,39 @@
 using System;
 using UnityEngine;
 
-public class Camera : MonoBehaviour
+namespace Assets.Scripts.Gameplay
 {
-    [SerializeField] private float _smoothTime;
-    [SerializeField] private float _zOffset;
-    [SerializeField] private Vector2 _offset;
-    [SerializeField] private float _arrivalThreshold;
-
-    private Cat _cat;
-    private Vector3 _velocity = Vector3.zero;
-    private bool _cameraReady;
-
-    public event Action CameraReady;
-
-    public void Construct(Cat cat)
+    public class Camera : MonoBehaviour
     {
-        _cat = cat;
-    }
-    void Update()
-    {
-        Vector3 desiredPosition = new Vector3(_cat.Position.x + _offset.x, _cat.Position.y + _offset.y, _zOffset);
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, _smoothTime);
+        [SerializeField] private float _smoothTime;
+        [SerializeField] private float _zOffset;
+        [SerializeField] private Vector2 _offset;
+        [SerializeField] private float _arrivalThreshold;
 
-        if (!_cameraReady && Vector3.Distance(transform.position, desiredPosition) < _arrivalThreshold)
+        private Cat _cat;
+        private Vector3 _velocity = Vector3.zero;
+        private bool _cameraReady;
+
+        public event Action CameraReady;
+
+        public void Construct(Cat cat)
         {
-            _cameraReady = true;
-            CameraReady?.Invoke();
+            _cat = cat;
+        }
+
+        void Update()
+        {
+            if (_cat == null)
+                return;
+
+            Vector3 desiredPosition = new Vector3(_cat.Position.x + _offset.x, _cat.Position.y + _offset.y, _zOffset);
+            transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref _velocity, _smoothTime);
+
+            if (!_cameraReady && Vector3.Distance(transform.position, desiredPosition) < _arrivalThreshold)
+            {
+                _cameraReady = true;
+                CameraReady?.Invoke();
+            }
         }
     }
 }
-

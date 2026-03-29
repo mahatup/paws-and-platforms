@@ -1,19 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
-public class ViewFactory
+namespace Assets.Scripts.UI
 {
-    private ViewPrefabConfig _config;
-    private Transform _parent;
-
-    public ViewFactory(Transform parent)
+    public class ViewFactory : IInitializable
     {
-        _parent = parent;
-    }
+        private GameObject _prefabViewContainer;
+        private GameObject _viewsContainer;
 
-    public T CreateView<T>(T prefab) where T: MonoBehaviour
-    {
-        return Object.Instantiate(prefab, _parent);
+        [Inject]
+        public ViewFactory(GameObject prefabView)
+        {
+            _prefabViewContainer = prefabView;
+            _viewsContainer = Object.Instantiate(_prefabViewContainer);
+        }
+
+        public void Initialize()
+        {
+
+        }
+
+        public T CreateView<T>(T prefab) where T : BaseView
+        {
+            return Object.Instantiate(prefab, _viewsContainer.transform);
+        }
     }
 }

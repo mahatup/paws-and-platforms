@@ -1,68 +1,72 @@
+using Assets.Scripts.Configs;
+using Assets.Scripts.Gameplay;
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+using Zenject;
 
-public class RestartViewPresenter : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private ViewPrefabConfig _config;
-    [SerializeField] private float _delay;
-    [SerializeField] private GameManager _gameManager;
-    [SerializeField] private CatService _catService;
-
-    private ViewFactory _viewFactory;
-    private RestartView _restartView;
-
-    private CancellationTokenSource _restartSceneCts;
-
-    private void Awake()
+    public class RestartViewPresenter : IInitializable, IDisposable
     {
-        _viewFactory = new ViewFactory(transform);
-        _restartView = _viewFactory.CreateView(_config.RestartViewPrefab);
-    }
+        private float _delay;
+        private CatService _catService;
+        private ViewService _viewService;
+        private RestartView _restartView;
+        private DelayConfig _delayConfig;
 
-    private void OnEnable()
-    {
-        _restartView.RestartGameButtonClicked += OnRestartGameButtonClicked;
-        _catService.Dead += Restart;
-    }
+        private CancellationTokenSource _restartSceneCts;
 
-    private void OnDisable()
-    {
-        _restartView.RestartGameButtonClicked -= OnRestartGameButtonClicked;
-        _catService.Dead -= Restart;
-    }
-
-    private void OnDestroy()
-    {
-        if (_restartSceneCts != null)
+        [Inject]
+        public RestartViewPresenter(
+            CatService catService,
+            ConfigsService configService,
+            ViewService viewService)
         {
-            _restartSceneCts.Cancel();
-            _restartSceneCts.Dispose();
+            _catService = catService;
+            _delayConfig = configService.GetConfig<DelayConfig>();
+            _viewService = viewService;
+        }
+
+        public void Initialize()
+        {
+            _restartView = _viewService.GetView<RestartView>();
+
+            _restartView.RestartGameButtonClicked += OnRestartGameButtonClicked;
+            _catService.Dead += Restart;
+            _delay = _delayConfig.RestartViewDelay;
+        }
+
+        public void Dispose()
+        {
+            _restartView.RestartGameButtonClicked -= OnRestartGameButtonClicked;
+            _catService.Dead -= Restart;
+
+            _restartSceneCts?.Cancel();
+            _restartSceneCts?.Dispose();
             _restartSceneCts = null;
         }
-    }
 
-    private void OnRestartGameButtonClicked()
-    {
-        Restart();
-    }
+        private void OnRestartGameButtonClicked()
+        {
+            Restart();
+        }
 
-    public void Restart()
-    {
-        _restartSceneCts = new CancellationTokenSource();
-        RestartAfterDelayAsync(_restartSceneCts.Token).Forget();
-    }
+        private void Restart()
+        {
+            _restartSceneCts = new CancellationTokenSource();
+            RestartAfterDelayAsync(_restartSceneCts.Token).Forget();
+        }
 
-    public async UniTaskVoid RestartAfterDelayAsync(CancellationToken token)
-    {
-        await UniTask.Delay(TimeSpan.FromSeconds(_delay), cancellationToken: token);
+        private async UniTaskVoid RestartAfterDelayAsync(CancellationToken token)
+        {
+            _restartView.Show();
 
-        GameManager.StaticSkipIntroNextLoad = true;
+            await UniTask.Delay(TimeSpan.FromSeconds(_delay), cancellationToken: token);
 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            GameManager.StaticSkipIntroNextLoad = true;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 }

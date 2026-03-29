@@ -1,17 +1,19 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class StartView : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private TMP_Text _loreText;
-    [SerializeField] private List<string> _loreLines;
-
-    public List<string> LoreLines => _loreLines;
-
-    public void SetLoreText(string loreText)
+    public class StartView : BaseView
     {
-        _loreText.text = loreText;
+        [SerializeField] private TMP_Text _loreText;
+        [SerializeField] private List<string> _loreLines;
+
+        public List<string> LoreLines => _loreLines;
+
+        public void SetLoreText(string loreText)
+        {
+            _loreText.text = loreText;
+        }
     }
 }

@@ -1,48 +1,77 @@
+using Assets.Scripts.Configs;
+using Assets.Scripts.Gameplay;
+using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using System.Threading;
+using Zenject;
 
-public class ReceiveKeyViewPresenter : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private CatService _catService;
-    [SerializeField] private ViewPrefabConfig _config;
-
-    private ViewFactory _viewFactory;
-    private ReceiveKeyView _receiveKeyView;
-
-    public event Action KeyCollected;
-
-    private void Awake()
+    public class ReceiveKeyViewPresenter : IInitializable, IDisposable
     {
-        _viewFactory = new ViewFactory(transform);
-    }
+        private float _messageDuration;
 
-    private void OnEnable()
-    {
-        _catService.KeyCollected += OnKeyCollected;
-    }
+        private CatService _catService;
+        private ViewService _viewService;
+        private DelayConfig _delayConfig;
+        private GameManager _gameManager;
 
-    private void OnDisable()
-    {
-        _catService.KeyCollected -= OnKeyCollected;
-    }
+        private ReceiveKeyView _receiveKeyView;
+        private CancellationTokenSource _cts;
 
-    private void OnKeyCollected()
-    {
-        _receiveKeyView = _viewFactory.CreateView(_config.ReceiveKeyViewPrefab);
-        KeyCollected?.Invoke();
-        ClearNotificationAfterDelay(2f); 
-    }
+        public event Action KeyCollected;
 
-    private async void ClearNotificationAfterDelay(float delaySeconds)
-    {
-        await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+        [Inject]
+        public ReceiveKeyViewPresenter(
+            CatService catService,
+            ConfigsService configService,
+            ViewService viewService,
+            GameManager gameManager)
+        {
+            _catService = catService;
+            _delayConfig = configService.GetConfig<DelayConfig>();
+            _viewService = viewService;
+            _gameManager = gameManager;
+        }
 
-        if (_receiveKeyView != null) 
-        { 
+        public void Initialize()
+        {
+            _receiveKeyView = _viewService.GetView<ReceiveKeyView>();
+
+            _cts = new CancellationTokenSource();
+            _messageDuration = _delayConfig.ReceiveKeyView;
+
+            _catService.KeyCollected += OnKeyCollected;
+        }
+
+        public void Dispose()
+        {
+            _catService.KeyCollected -= OnKeyCollected;
+
+            if (_cts != null)
+            {
+                _cts.Cancel();
+                _cts.Dispose();
+                _cts = null;
+            }
+        }
+
+        private void OnKeyCollected()
+        {
+            _gameManager.isKeyCollected = true;
+            _receiveKeyView.Show();
+            KeyCollected?.Invoke();
+            HideAfterDelayAsync(_messageDuration, _cts.Token).Forget();
+        }
+
+        private async UniTaskVoid HideAfterDelayAsync(float delaySeconds, CancellationToken token)
+        {
+            await UniTask.Delay(
+                TimeSpan.FromSeconds(delaySeconds),
+                cancellationToken: token);
+
             _receiveKeyView.ClearText();
+            _receiveKeyView.Hide();
         }
     }
 }
-

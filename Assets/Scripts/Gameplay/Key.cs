@@ -1,8 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
-public class Key : MonoBehaviour
+namespace Assets.Scripts.Gameplay
 {
-   
+    public class Key : MonoBehaviour
+    {
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            var cat = collision.attachedRigidbody.GetComponent<Cat>();
+            if (cat != null)
+            {
+                cat.CollectKey();
+                Destroy(gameObject);
+            }
+        }
+    }
 }

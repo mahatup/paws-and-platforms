@@ -1,30 +1,32 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class CatTriggerService
+namespace Assets.Scripts.Gameplay
 {
-    public event Action CoinCollected;
-    public event Action KeyCollected;
-    public event Action SpaceShipStepped;
-
-    public void SetCollision(Collider2D collision)
+    public class CatTriggerService
     {
-        if (collision.TryGetComponent(out Coin _))
-        {
-            CoinCollected?.Invoke();
-            UnityEngine.Object.Destroy(collision.gameObject);
-        }
+        public event Action CoinCollected;
+        public event Action KeyCollected;
+        public event Action SpaceShipStepped;
 
-        else if (collision.TryGetComponent(out Key _))
+        public void SetCollision(Collider2D collision)
         {
-            KeyCollected?.Invoke();
-            UnityEngine.Object.Destroy(collision.gameObject);
-        }
-        else if (collision.TryGetComponent(out SpaceShip _))
-        {
-            SpaceShipStepped?.Invoke();
+            if (collision.TryGetComponent(out Coin _))
+            {
+                CoinCollected?.Invoke();
+                UnityEngine.Object.Destroy(collision.gameObject);
+            }
+
+            else if (collision.TryGetComponent(out Key _))
+            {
+                KeyCollected?.Invoke();
+                UnityEngine.Object.Destroy(collision.gameObject);
+            }
+
+            else if (collision.TryGetComponent(out SpaceShip _))
+            {
+                SpaceShipStepped?.Invoke();
+            }
         }
     }
 }

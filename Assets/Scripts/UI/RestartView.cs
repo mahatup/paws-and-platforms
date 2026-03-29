@@ -2,22 +2,25 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RestartView : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private Button _restartGameButton;
+    public class RestartView : BaseView
+    {
+        [SerializeField] private Button _restartGameButton;
 
-    public event Action RestartGameButtonClicked;
+        public event Action RestartGameButtonClicked;
 
-    private void OnEnable()
-    {
-        _restartGameButton.onClick.AddListener(OnRestartGameButton);
-    }
-    private void OnDisable()
-    {
-        _restartGameButton.onClick.RemoveListener(OnRestartGameButton);
-    }
-    private void OnRestartGameButton()
-    {
-        RestartGameButtonClicked?.Invoke();
+        private void OnEnable()
+        {
+            _restartGameButton.onClick.AddListener(OnRestartGameButton);
+        }
+        private void OnDisable()
+        {
+            _restartGameButton.onClick.RemoveListener(OnRestartGameButton);
+        }
+        private void OnRestartGameButton()
+        {
+            RestartGameButtonClicked?.Invoke();
+        }
     }
 }

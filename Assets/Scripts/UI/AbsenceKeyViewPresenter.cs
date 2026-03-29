@@ -1,43 +1,57 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Assets.Scripts.Configs;
+using Assets.Scripts.Gameplay;
 using Cysharp.Threading.Tasks;
+using System;
 using System.Threading;
+using Zenject;
 
-public class AbsenceKeyViewPresenter : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private ViewPrefabConfig _config;
-    [SerializeField] private GameManager _gameManager;
-    [SerializeField] private float _messageDuration;
-    private ViewFactory _viewFactory;
-
-    private void Awake()
+    public class AbsenceKeyViewPresenter : IInitializable, IDisposable
     {
-        _viewFactory = new ViewFactory(transform);
-    }
+        private float _messageDuration;
 
-    private void OnEnable()
-    {
-        _gameManager.KeyNotCollected += OnKeyNotCollected;
-    }
+        private GameManager _gameManager;
+        private ViewService _viewService;
+        private DelayConfig _delayConfig;
 
-    private void OnDisable()
-    {
-        _gameManager.KeyNotCollected -= OnKeyNotCollected;
-    }
+        private AbsenceKeyView _absenceKeyView;
 
-    private void OnKeyNotCollected()
-    {
-        ShowTemporaryMessageAsync(this.GetCancellationTokenOnDestroy()).Forget();
-    }
+        [Inject]
+        public AbsenceKeyViewPresenter(
+            GameManager gameManager,
+            ConfigsService configService,
+            ViewService viewService)
+        {
+            _gameManager = gameManager;
+            _delayConfig = configService.GetConfig<DelayConfig>();
+            _viewService = viewService;
+        }
 
-    private async UniTaskVoid ShowTemporaryMessageAsync(CancellationToken token)
-    {
-        var view = _viewFactory.CreateView(_config.AbsenceKeyViewPrefab);
+        public void Initialize()
+        {
+            _gameManager.KeyNotCollected += OnKeyNotCollected;
+            _absenceKeyView = _viewService.GetView<AbsenceKeyView>();
+            _messageDuration = _delayConfig.AbsenceKeyDelay;
+        }
 
-        await UniTask.Delay(TimeSpan.FromSeconds(_messageDuration), cancellationToken: token);
+        public void Dispose()
+        {
+            _gameManager.KeyNotCollected -= OnKeyNotCollected;
+        }
 
-        Destroy(view.gameObject);
+        private void OnKeyNotCollected()
+        {
+            ShowTemporaryMessageAsync(_absenceKeyView.GetCancellationTokenOnDestroy()).Forget();
+        }
+
+        private async UniTaskVoid ShowTemporaryMessageAsync(CancellationToken token)
+        {
+            _absenceKeyView.Show();
+
+            await UniTask.Delay(TimeSpan.FromSeconds(_messageDuration), cancellationToken: token);
+
+            _absenceKeyView.Hide();
+        }
     }
 }

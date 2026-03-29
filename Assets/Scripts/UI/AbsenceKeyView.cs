@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class AbsenceKeyView : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private TMP_Text _counterCoinText;
+    public class AbsenceKeyView : BaseView
+    {
+        [SerializeField] private TMP_Text _counterCoinText;
+    }
 }

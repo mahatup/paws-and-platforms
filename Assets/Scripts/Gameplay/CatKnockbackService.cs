@@ -2,42 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CatKnockbackService
+namespace Assets.Scripts.Gameplay
 {
-    private Cat _cat;
-    private CatKnockbackConfig _config;
-
-    public CatKnockbackService(Cat cat, CatKnockbackConfig config)
+    public class CatKnockbackService
     {
-        _cat = cat;
-        _config = config;
-    }
+        private CatKnockbackConfig _config;
 
-    public void ApplyKnockback(Vector2 sourcePosition, Vector2 sourceVelocity)
-    {
-        Vector2 delta = _cat.Position - sourcePosition;
-        Vector2 knockDirection;
-
-        bool hitFromAbove = Mathf.Abs(delta.y) > Mathf.Abs(delta.x) && delta.y < 0;
-        bool hitFromBelow = Mathf.Abs(delta.y) > Mathf.Abs(delta.x) && delta.y > 0;
-
-        if (hitFromAbove)
-        { 
-            knockDirection = Vector2.down;
-        } 
-        else if (hitFromBelow)
-        { 
-            knockDirection = Vector2.up;
-        }
-        else
+        public CatKnockbackService(CatKnockbackConfig config)
         {
-            float horizontalSign = delta.x != 0 ? Mathf.Sign(delta.x) : 1f;
-            knockDirection = new Vector2(horizontalSign * _config.KnockbackSideHorizontal, _config.KnockbackSideVertical).normalized;
+            _config = config;
+        }
+
+        public void ApplyKnockback(Cat cat, Vector2 sourcePosition)
+        {
+            Vector2 delta = cat.Position - sourcePosition;
+            Vector2 knockDirection;
+
+            bool hitFromAbove = Mathf.Abs(delta.y) > Mathf.Abs(delta.x) && delta.y < 0;
+            bool hitFromBelow = Mathf.Abs(delta.y) > Mathf.Abs(delta.x) && delta.y > 0;
+
+            if (hitFromAbove)
+            {
+                knockDirection = Vector2.down;
+            }
+            else if (hitFromBelow)
+            {
+                knockDirection = Vector2.up;
+            }
+            else
+            {
+                float horizontalSign = delta.x != 0 ? Mathf.Sign(delta.x) : 1f;
+                knockDirection = new Vector2(horizontalSign * _config.KnockbackSideHorizontal, _config.KnockbackSideVertical).normalized;
+
+            }
+            cat.SetVelocity(Vector2.zero);
+
+            cat.AddForce(knockDirection * _config.KnockForce, ForceMode2D.Impulse);
 
         }
-        _cat.SetVelocity(Vector2.zero);
-
-        _cat.AddForce(knockDirection * _config.KnockForce, ForceMode2D.Impulse);
-
     }
 }

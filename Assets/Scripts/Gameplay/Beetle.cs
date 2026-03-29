@@ -1,22 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Beetle : MonoBehaviour
+namespace Assets.Scripts.Gameplay
 {
-    [SerializeField] private Rigidbody2D _rigidBody2D;
-    [SerializeField] private SpriteRenderer _spriteRenderer;
-
-    public Vector2 Position => transform.position;
-    public Vector2 Velocity => _rigidBody2D.velocity;
-
-    public void SetVelosity(Vector2 velocity)
+    public class Beetle : MonoBehaviour, IDamager
     {
-        _rigidBody2D.velocity = velocity;
-    }
-    
-    public void FlipDirection()
-    {
-        _spriteRenderer.flipX = !_spriteRenderer.flipX;
+        [SerializeField] private Rigidbody2D _rigidBody2D;
+        [SerializeField] private SpriteRenderer _spriteRenderer;
+
+        public Vector2 Position2D => new(transform.position.x, transform.position.y);
+
+        public void SetVelosity(Vector2 velocity)
+        {
+            _rigidBody2D.velocity = velocity;
+        }
+
+        public void FlipDirection()
+        {
+            _spriteRenderer.flipX = !_spriteRenderer.flipX;
+        }
     }
 }

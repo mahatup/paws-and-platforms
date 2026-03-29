@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class GameOverView : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private TMP_Text _loreText;
+    public class GameOverView : BaseView
+    {
+        [SerializeField] private TMP_Text _loreText;
+    }
 }

@@ -1,43 +1,59 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-// TODO: потом разобраться с этой вьюшкой
-[Serializable]
-public class Heart
+
+namespace Assets.Scripts.UI
 {
-    public GameObject Whole;
-    public GameObject Broken;
-}
-public class LivesView : MonoBehaviour
-{
-    private readonly List<Heart> _hearts = new();
-
-    public void AddHeart(GameObject whole, GameObject broken)
+    public class LivesView : BaseView
     {
-        Heart heart = new Heart { Whole = whole, Broken = broken };
-        heart.Whole.SetActive(true);
-        heart.Broken.SetActive(false);
-        _hearts.Add(heart);
-    }
-   
-    public void BreakLastHeart()
-    {
-        if (_hearts.Count == 0) return;
+        [SerializeField] private GameObject _heartTemplate;
+        [SerializeField] private Transform _container;
 
-        Heart last = _hearts.Last();
+        private readonly List<Heart> _hearts = new();
 
-        if (last.Whole)
-        { 
-            last.Whole.SetActive(false); 
+        public void Initialize(int lives)
+        {
+            Clear();
+
+            for (int i = 0; i < lives; i++)
+            {
+                CreateHeart();
+            }
         }
 
-        if (last.Broken)
-        { 
-            last.Broken.SetActive(true); 
+        public void BreakLastHeart()
+        {
+            if (_hearts.Count == 0) return;
+
+            Heart last = _hearts[^1];
+
+            last.Whole.SetActive(false);
+            last.Broken.SetActive(true);
+
+            _hearts.RemoveAt(_hearts.Count - 1);
         }
 
-        _hearts.Remove(last);
+        private void CreateHeart()
+        {
+            var heartObj = Instantiate(_heartTemplate, _container);
+
+            var whole = heartObj.transform.Find("WholeHeart").gameObject;
+            var broken = heartObj.transform.Find("BrokenHeart").gameObject;
+
+            broken.SetActive(false);
+
+            _hearts.Add(new Heart
+            {
+                Whole = whole,
+                Broken = broken
+            });
+        }
+
+        private void Clear()
+        {
+            foreach (Transform child in _container)
+                Destroy(child.gameObject);
+
+            _hearts.Clear();
+        }
     }
 }

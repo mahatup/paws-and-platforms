@@ -1,33 +1,57 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
-public class Cat : MonoBehaviour
+namespace Assets.Scripts.Gameplay
 {
-    [SerializeField] private Rigidbody2D _rigidBody2D;
-    [SerializeField] private SpriteRenderer _spriteRenderer;
-    [SerializeField] private Animator _animator;
-    [SerializeField] private string _animatorStateParam = "State";
-    public Vector2 Position => transform.position;
-    public Vector2 Velocity => _rigidBody2D.velocity;
+    public class Cat : MonoBehaviour
+    {
+        [SerializeField] private Rigidbody2D _rigidBody2D;
+        [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Animator _animator;
+        [SerializeField] private string _animatorStateParam = "State";
+        public Vector2 Position => transform.position;
+        public Vector2 Velocity => _rigidBody2D.velocity;
 
-    public void SetVelocity(Vector2 velocity)
-    {
-        _rigidBody2D.velocity = velocity;
-    }
+        public event Action CoinCollected;
+        public event Action KeyCollected;
+        public event Action SpaceShipStepped;
+        public event Action<IDamager> TrapStepped;
 
-    public void AddForce(Vector2 force, ForceMode2D mode = ForceMode2D.Force)
-    {
-        _rigidBody2D.AddForce(force, mode);
-    }
+        public void SetVelocity(Vector2 velocity)
+        {
+            _rigidBody2D.velocity = velocity;
+        }
 
-    public void FlipDirection(float horizontalInput)
-    {
-        if (horizontalInput != 0)
-            _spriteRenderer.flipX = horizontalInput < 0f;
-    }
-    public void SetAnimationState(EStates state)
-    {
-        _animator.SetInteger(_animatorStateParam, (int)state);
+        public void AddForce(Vector2 force, ForceMode2D mode = ForceMode2D.Force)
+        {
+            _rigidBody2D.AddForce(force, mode);
+        }
+
+        public void FlipDirection(float horizontalInput)
+        {
+            if (horizontalInput != 0)
+                _spriteRenderer.flipX = horizontalInput < 0f;
+        }
+        public void SetAnimationState(EStates state)
+        {
+            _animator.SetInteger(_animatorStateParam, (int)state);
+        }
+
+        public void CollectCoin()
+        {
+            CoinCollected?.Invoke();
+        }
+        public void CollectKey()
+        {
+            KeyCollected?.Invoke();
+        }
+        public void CollectSpaceShip()
+        {
+            SpaceShipStepped?.Invoke();
+        }
+        public void SetDamage(IDamager damager)
+        {
+            TrapStepped?.Invoke(damager);
+        }
     }
 }

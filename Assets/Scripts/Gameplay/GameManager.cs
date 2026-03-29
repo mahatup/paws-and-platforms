@@ -1,109 +1,79 @@
+using Assets.Scripts.UI;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Analytics;
+using Zenject;
 
-public enum GameState
+namespace Assets.Scripts.Gameplay
 {
-    Intro,
-    Playing,
-    GameOver
-}
-
-public class GameManager : MonoBehaviour
-{
-    [SerializeField] private CatService _catService;
-    [SerializeField] private ReceiveKeyViewPresenter _receiveKeyViewPresenter;
-    [SerializeField] private StartViewPresenter _startViewPresenter;
-    [SerializeField] private GameOverViewPresenter _gameOverViewPresenter;
-
-    private bool _isKeyCollected = false;
-
-    public static bool StaticSkipIntroNextLoad = false;
-    public static GameManager Instance { get; private set; }
-    
-    public GameState State { get; private set; } = GameState.Intro;
-
-    public event Action LevelCompleted;
-    public event Action KeyNotCollected;
-
-    private void Awake()
+    public class GameManager : IInitializable, IDisposable
     {
-        if (Instance != null && Instance != this)
+        private CatService _catService;
+        private ViewService _viewService;
+
+        public bool isKeyCollected = false;
+
+        public static bool StaticSkipIntroNextLoad = false;
+
+        public GameState State { get; private set; } = GameState.Intro;
+
+        public event Action LevelCompleted;
+        public event Action KeyNotCollected;
+        public event Action KeyCollected;
+
+        [Inject]
+        public GameManager(
+            CatService catService)
         {
-            Destroy(gameObject);
-            return;
+            _catService = catService;
         }
-        Instance = this;
-    }
 
-    private void OnEnable()
-    {
-        _catService.SpaceShipStepped += OnSpaceShipStepped;
-        _receiveKeyViewPresenter.KeyCollected += OnKeyCollected;
-    }
-
-    private void Start()
-    {
-        if (StaticSkipIntroNextLoad)
+        public void Initialize()
         {
-            StaticSkipIntroNextLoad = false;
-            StartGame();
+            _catService.SpaceShipStepped += OnSpaceShipStepped;
+            KeyCollected?.Invoke();
+
+            if (StaticSkipIntroNextLoad)
+            {
+                StaticSkipIntroNextLoad = false;
+                StartGame();
+            }
+            else
+            {
+                EnterIntroState();
+            }
         }
-        else
+
+        public void Dispose()
         {
-            EnterIntroState();
+            _catService.SpaceShipStepped -= OnSpaceShipStepped;
         }
-    }
-    private void OnDisable()
-    {
-        _catService.SpaceShipStepped -= OnSpaceShipStepped;
-        _receiveKeyViewPresenter.KeyCollected -= OnKeyCollected;
-    }
 
-    private void OnSpaceShipStepped()
-    {
-        if (_isKeyCollected)
+        private void OnSpaceShipStepped()
         {
-            EnterGameOverState();
-            LevelCompleted?.Invoke();
-
-            if (_receiveKeyViewPresenter != null)
-                _receiveKeyViewPresenter.KeyCollected -= OnKeyCollected;
+            if (isKeyCollected)
+            {
+                EnterGameOverState();
+                LevelCompleted?.Invoke();
+            }
+            else
+            {
+                KeyNotCollected?.Invoke();
+            }
         }
-        else
+
+
+        public void EnterIntroState()
         {
-            KeyNotCollected?.Invoke();
+            State = GameState.Intro;
         }
-    }
 
-    private void OnKeyCollected()
-    {
-        _isKeyCollected = true;
-    }
-    public void EnterIntroState()
-    {
-        State = GameState.Intro;
-        _startViewPresenter.SetActive(true);
-
-        if (_gameOverViewPresenter != null)
-            _gameOverViewPresenter.SetActive(false);
-    }
-
-    public void StartGame()
-    {
-        State = GameState.Playing;
-        _startViewPresenter.SetActive(false);
-    }
-
-    public void EnterGameOverState()
-    {
-        State = GameState.GameOver;
-
-        if (_gameOverViewPresenter != null)
+        public void StartGame()
         {
-            _gameOverViewPresenter.SetActive(true);
+            State = GameState.Playing;
+        }
+
+        public void EnterGameOverState()
+        {
+            State = GameState.GameOver;
         }
     }
 }

@@ -1,72 +1,81 @@
-using Cysharp.Threading.Tasks;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Assets.Scripts.Gameplay;
+using Zenject;
 
-public class StartViewPresenter : MonoBehaviour
+namespace Assets.Scripts.UI
 {
-    [SerializeField] private ViewPrefabConfig _viewPrefabConfig;
-    [SerializeField] private InputConfig _inputConfig;
-    [SerializeField] private GameManager _gameManager;
-
-    private StartView _startView;
-    private InputService _inputService;
-
-    private int _currentLine = 0;
-    private bool _isActive = true; 
-
-    private ViewFactory viewFactory;
-
-    private void Awake()
+    public class StartViewPresenter : IInitializable, ITickable
     {
-        viewFactory = new ViewFactory(transform);
-        _startView = viewFactory.CreateView(_viewPrefabConfig.StartViewPrefab);
+        private GameManager _gameManager;
+        private ViewService _viewService;
+        private InputService _inputService;
 
-        _inputService = new InputService(_inputConfig);
-    }
-    private void OnEnable()
-    {
-        _currentLine = 0;
-        _isActive = true;
-        
-        ShowLore();
-    }
+        private StartView _startView;
+        private RestartView _restartView;
+        private CoinCounterView _coinCounterView;
+        private LivesView _livesView;
 
-    private void Update()
-    {
-        if (!_isActive) return;
-        if (_inputService.IsSkipPressed)
+        private int _currentLine = 0;
+        private bool _isActive = true;
+
+        [Inject]
+        public StartViewPresenter(
+            ViewService viewService,
+            GameManager gameManager,
+            InputService inputService)
         {
-            ShowNextLoreLine();
+            _viewService = viewService;
+            _gameManager = gameManager;
+            _inputService = inputService;
         }
-    }
 
-    public void SetActive(bool active)
-    {
-        gameObject.SetActive(active);
-    }
-
-    private void ShowLore()
-    {
-        if (_currentLine < _startView.LoreLines.Count)
+        public void Initialize()
         {
-            _startView.SetLoreText(_startView.LoreLines[_currentLine]);
-        }
-    }
+            _startView = _viewService.GetView<StartView>();
+            _startView.Show();
+            _restartView = _viewService.GetView<RestartView>();
+            _coinCounterView = _viewService.GetView<CoinCounterView>();
+            _livesView = _viewService.GetView<LivesView>();
 
-    private void ShowNextLoreLine()
-    {
-        _currentLine++;
-        if (_currentLine < _startView.LoreLines.Count)
-        {
+            _currentLine = 0;
+            _isActive = true;
+
             ShowLore();
         }
-        else
+
+        public void Tick()
         {
-            _isActive = false;
-            gameObject.SetActive(false);
-            _gameManager.StartGame();
+            if (!_isActive) return;
+            if (_inputService.IsSkipPressed)
+            {
+                ShowNextLoreLine();
+            }
+        }
+
+        private void ShowLore()
+        {
+            if (_currentLine < _startView.LoreLines.Count)
+            {
+                _startView.SetLoreText(_startView.LoreLines[_currentLine]);
+            }
+        }
+
+        private void ShowNextLoreLine()
+        {
+            _currentLine++;
+            if (_currentLine < _startView.LoreLines.Count)
+            {
+                ShowLore();
+            }
+            else
+            {
+                _isActive = false;
+
+                _startView.Hide();
+                _restartView.Show();
+                _coinCounterView.Show();
+                _livesView.Show();
+                _gameManager.StartGame();
+            }
         }
     }
 }
