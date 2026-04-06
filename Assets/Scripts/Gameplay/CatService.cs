@@ -2,13 +2,12 @@ using Assets.Scripts.Configs;
 using System;
 using UnityEngine;
 using Zenject;
-
+// TODO: убрать монобех
 namespace Assets.Scripts.Gameplay
 {
     public class CatService : MonoBehaviour
     {
         [SerializeField] private Cat _cat;
-
         [SerializeField] private Camera _camera;
 
         private bool _canMove = false;
@@ -67,10 +66,8 @@ namespace Assets.Scripts.Gameplay
             _cat.CoinCollected += OnCoinCollected;
             _cat.KeyCollected += OnKeyCollected;
             _cat.SpaceShipStepped += OnSpaceShipStepped;
-            _cat.TrapStepped += OnCatKnocked;
-
-            EventManager.CatKnocked += OnCatKnocked;
-            EventManager.EnemyKilled += OnEnemyKilled;
+            _cat.Pushing += OnCatKnocked;
+            _cat.LossLife += OnLossLife;
         }
 
 
@@ -78,22 +75,18 @@ namespace Assets.Scripts.Gameplay
         {
             _camera.CameraReady -= OnCameraReady;
 
-            EventManager.CatKnocked -= OnCatKnocked;
-            EventManager.EnemyKilled -= OnEnemyKilled;
-
             _healthService.HeartDropped -= OnHeartDropped;
             _healthService.HeartSpawned -= OnHeartSpawned;
             _healthService.Dead -= OnDead;
 
             _movementService.AirDeath -= OnDead;
 
+            _cat.Pushing -= OnCatKnocked;
             _cat.CoinCollected -= OnCoinCollected;
             _cat.KeyCollected -= OnKeyCollected;
             _cat.SpaceShipStepped -= OnSpaceShipStepped;
-            _cat.TrapStepped -= OnCatKnocked;
-
+            _cat.LossLife -= OnLossLife;
         }
-
 
         private void OnCameraReady() => _canMove = true;
         private void OnHeartDropped() => HeartDropped?.Invoke();
@@ -114,16 +107,14 @@ namespace Assets.Scripts.Gameplay
             _movementService.Update();
         }
 
-        private void OnEnemyKilled(IDamager damager)
-        {
-            _knockbackService.ApplyKnockback(_cat, damager.Position2D);
-        }
-
         private void OnCatKnocked(IDamager damager)
         {
             _knockbackService.ApplyKnockback(_cat, damager.Position2D);
-            _healthService.DecreaseHealth();
         }
 
+        private void OnLossLife()
+        {
+            _healthService.DecreaseHealth();
+        }
     }
 }

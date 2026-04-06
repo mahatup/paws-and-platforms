@@ -15,7 +15,9 @@ namespace Assets.Scripts.Gameplay
         public event Action CoinCollected;
         public event Action KeyCollected;
         public event Action SpaceShipStepped;
-        public event Action<IDamager> TrapStepped;
+        public event Action LossLife;
+        public event Action<IDamager> Pushing;
+        public event Action<IDamager> EnemyKilled;
 
         public void SetVelocity(Vector2 velocity)
         {
@@ -51,7 +53,16 @@ namespace Assets.Scripts.Gameplay
         }
         public void SetDamage(IDamager damager)
         {
-            TrapStepped?.Invoke(damager);
+            Pushing?.Invoke(damager);
+            LossLife?.Invoke();
+        }
+        public void Push(IDamager damager)
+        {
+            Pushing?.Invoke(damager);
+        }
+        public void BeetleDeath(IDamager damager)
+        {
+            EnemyKilled?.Invoke(damager);
         }
     }
 }
